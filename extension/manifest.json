@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Atlas — EHR Copilot",
+  "version": "0.2.0",
+  "description": "Agentic EHR copilot: ask anything, it reads/reasons over the chart and writes (confirm-gated) via SMART-on-FHIR. Works on Epic.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtSzy7cAeKmYyjnexDA0OzRRyF1oFK+8QKAFcs4l+JT/Vj5FzuFE0bwExICjXInfjItPvWE+gFxeJ7b1vDxikBCNDCIdfSVjXd+NWaMa2Gff7GUoE9Cp+ty/pxxcXCeRAiEytgCF9a5NDZIF5aZ1n0dJQdTFWkDas9mU84Y1JgfCXgUPO9/FbO1pB30h41b9V36FOQ9jKrNAjT7/sweKRlWj1AizZfh3tcQol3bVZv2TJvocDRWEuQBWjkxZzg3sL51/x1z5uXc6nbCMRd7ak9808tIT8w8D3RZzxGi8fCpERIrravY5J0P+aLqJaqbIe4CSR6U/Xhp5a4uxHlLkfewIDAQAB",
+  "action": {
+    "default_title": "Toggle Atlas"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "identity",
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://ehr-copilot-gilt.vercel.app/*",
+    "https://fhir.epic.com/*",
+    "https://*.epic.com/*",
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
