@@ -4,6 +4,7 @@ import { usePatientData } from "@/lib/hooks/usePatientData";
 import { EhrBackdrop } from "./EhrBackdrop";
 import { FloatingAtlas } from "./FloatingAtlas";
 import { LiveConsole } from "./LiveConsole";
+import { InfoModal } from "./InfoModal";
 
 /**
  * The demo surface: a real-FHIR-backed EHR view filling the screen, with the Atlas
@@ -25,6 +26,7 @@ export function Workspace() {
         onChartRefresh={setContext}
       />
       <LiveConsole />
+      <InfoModal />
     </div>
   );
 }
