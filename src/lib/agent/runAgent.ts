@@ -10,10 +10,21 @@ export interface ProposedAction {
   resource: Record<string, unknown>;
 }
 
+/** A structured telemetry step for the Live System Console (real timings/labels). */
+export interface AgentEvent {
+  kind: "fhir" | "reason" | "propose";
+  label: string;
+  detail?: string;
+  ms?: number;
+  status?: "ok" | "error";
+}
+
 export interface AgentTurn {
   reply: string;
   proposedActions: ProposedAction[];
   toolLog: string[]; // human-readable trace for the UI
+  events: AgentEvent[]; // structured trace for the Live System Console
+  usage: { inputTokens: number; outputTokens: number; rounds: number };
 }
 
 type Msg = Anthropic.MessageParam;
@@ -39,12 +50,17 @@ export async function runAgent(opts: {
   ];
   const proposedActions: ProposedAction[] = [];
   const toolLog: string[] = [];
+  const events: AgentEvent[] = [];
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let rounds = 0;
 
   // Pre-load a PHI-stripped chart snapshot so the agent reasons in 1-2 rounds
   // instead of many sequential searches (huge latency win).
   let snapshot = "";
   const ref = opts.patientRef;
   try {
+    const snapStart = Date.now();
     const [cond, obs, meds, alg, srv] = await Promise.all([
       opts.fhir.search("Condition", `subject=${ref}&_count=50`).catch(() => null),
       opts.fhir.search("Observation", `patient=${ref}&_count=50`).catch(() => null),
@@ -60,17 +76,35 @@ export async function runAgent(opts: {
       orders: srv ? sanitizeBundle(srv) : null,
     }).slice(0, 9000);
     toolLog.push("search Condition", "search Observation", "search AllergyIntolerance");
+    events.push({
+      kind: "fhir",
+      label: "Snapshot ×5 resources",
+      detail: "Condition · Observation · Medication · Allergy · ServiceRequest",
+      ms: Date.now() - snapStart,
+      status: "ok",
+    });
   } catch {
     /* fall back to on-demand tools */
   }
 
   for (let round = 0; round < 5; round++) {
+    const roundStart = Date.now();
     const resp = await client.messages.create({
       model: AGENT_MODEL,
       max_tokens: 1500,
       system: buildAgentSystemPrompt(opts.patientRef, snapshot),
       tools: FHIR_TOOLS,
       messages,
+    });
+    rounds++;
+    inputTokens += resp.usage?.input_tokens ?? 0;
+    outputTokens += resp.usage?.output_tokens ?? 0;
+    events.push({
+      kind: "reason",
+      label: `reasoning round ${round + 1}`,
+      detail: `${resp.usage?.output_tokens ?? 0} tok out · ${AGENT_MODEL.replace(/-\d+$/, "")}`,
+      ms: Date.now() - roundStart,
+      status: "ok",
     });
 
     const toolUses = resp.content.filter(
@@ -83,7 +117,13 @@ export async function runAgent(opts: {
         .map((b) => b.text)
         .join("\n")
         .trim();
-      return { reply, proposedActions, toolLog };
+      return {
+        reply,
+        proposedActions,
+        toolLog,
+        events,
+        usage: { inputTokens, outputTokens, rounds },
+      };
     }
 
     messages.push({ role: "assistant", content: resp.content });
@@ -96,7 +136,9 @@ export async function runAgent(opts: {
           const rt = String(input.resourceType);
           const q = String(input.query ?? "");
           toolLog.push(`search ${rt} ${q}`);
+          const opStart = Date.now();
           const data = await opts.fhir.search(rt, q);
+          events.push({ kind: "fhir", label: `GET ${rt}`, detail: q || undefined, ms: Date.now() - opStart, status: "ok" });
           results.push({
             type: "tool_result",
             tool_use_id: tu.id,
@@ -106,7 +148,9 @@ export async function runAgent(opts: {
           const rt = String(input.resourceType);
           const id = String(input.id);
           toolLog.push(`read ${rt}/${id}`);
+          const opStart = Date.now();
           const data = await opts.fhir.read(rt, id);
+          events.push({ kind: "fhir", label: `GET ${rt}/${id}`, ms: Date.now() - opStart, status: "ok" });
           results.push({
             type: "tool_result",
             tool_use_id: tu.id,
@@ -120,6 +164,7 @@ export async function runAgent(opts: {
           };
           proposedActions.push(action);
           toolLog.push(`propose ${action.resourceType}: ${action.summary}`);
+          events.push({ kind: "propose", label: `propose ${action.resourceType}`, detail: action.summary, status: "ok" });
           results.push({
             type: "tool_result",
             tool_use_id: tu.id,
@@ -134,6 +179,7 @@ export async function runAgent(opts: {
           });
         }
       } catch (e) {
+        events.push({ kind: "fhir", label: `${tu.name} failed`, detail: e instanceof Error ? e.message : String(e), status: "error" });
         results.push({
           type: "tool_result",
           tool_use_id: tu.id,
@@ -150,5 +196,7 @@ export async function runAgent(opts: {
     reply: "I gathered a lot but hit the step limit — ask me to continue.",
     proposedActions,
     toolLog,
+    events,
+    usage: { inputTokens, outputTokens, rounds },
   };
 }

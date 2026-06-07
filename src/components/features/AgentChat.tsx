@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles, Send, FlaskConical, ListPlus, Activity, FileText, ShieldAlert, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { mdToHtml } from "@/lib/markdown";
+import { emit, streamBackendEvents, type BackendEvent } from "@/lib/telemetry";
 import type { PatientContext } from "@/lib/types";
 
 interface ProposedAction {
@@ -127,6 +128,23 @@ export function AgentChat({ patientId, patientName, context, onWriteComplete }: 
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error ?? "Agent failed");
+      // Surface the real server-side trace in the Live System Console.
+      if (Array.isArray(d.events)) {
+        streamBackendEvents(d.events as BackendEvent[]);
+        const u = d.usage ?? {};
+        const total = (u.inputTokens ?? 0) + (u.outputTokens ?? 0);
+        if (total) {
+          window.setTimeout(
+            () =>
+              emit({
+                kind: "info",
+                label: `${total.toLocaleString()} tokens · ${u.rounds ?? 0} round(s)`,
+                detail: `${u.inputTokens ?? 0} in / ${u.outputTokens ?? 0} out`,
+              }),
+            (d.events.length + 1) * 100,
+          );
+        }
+      }
       setMessages((m) => [
         ...m,
         { role: "atlas", text: d.reply || "(no reply)", actions: d.proposedActions || [], status: "", toolLog: d.toolLog || [] },
@@ -150,6 +168,11 @@ export function AgentChat({ patientId, patientName, context, onWriteComplete }: 
       });
       const d = await r.json();
       const w = (d.written || []).length;
+      if (r.ok && w > 0) {
+        (msg.actions ?? []).forEach((a) =>
+          emit({ kind: "write", method: "POST", label: `${a.resourceType} committed`, detail: a.summary, status: "ok" }),
+        );
+      }
       setMessages((m) =>
         m.map((x, i) =>
           i === idx ? { ...x, status: r.ok ? "done" : "error", result: r.ok ? `Wrote ${w} item(s) to the chart.` : d.error } : x,
