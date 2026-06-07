@@ -19,7 +19,7 @@
   ],
   "host_permissions": [
     "http://localhost:3000/*",
-    "https://ehr-copilot-gilt.vercel.app/*",
+    "https://atlas-ehr-one.vercel.app/*",
     "https://fhir.epic.com/*",
     "https://*.epic.com/*",
     "<all_urls>"
