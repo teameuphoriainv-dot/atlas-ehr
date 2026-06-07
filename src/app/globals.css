@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+/*
+  Atlas adopts Solace's "Clinical Sanctuary" design system.
+  Token NAMES are kept stable for Atlas components; VALUES are Solace's exact tokens
+  (solace/frontend/tailwind.config.ts + src/index.css). DM Sans in-app; Fraunces is
+  marketing-surface only (loaded on /welcome).
+*/
+@theme {
+  /* Brand — deep teal-slate */
+  --color-primary: #2a474e;
+  --color-primary-hover: #223b41;
+  --color-primary-container: #3b5e67;
+  --color-primary-subtle: #cbe3e9; /* Solace primary-fixed — code badges, selected */
+  --color-primary-dim: #d8ecf0;
+  --color-secondary: #406372;
+  --color-secondary-container: #cadce7;
+
+  /* Surfaces (Solace tiers: surface canvas, lowest=cards) */
+  --color-background: #f8f9f9; /* Solace surface (canvas) */
+  --color-surface: #ffffff; /* Solace surface-lowest (cards) */
+  --color-surface-alt: #f3f4f4; /* Solace surface-low */
+  --color-surface-high: #e7e8e8;
+
+  /* Text + lines */
+  --color-text: #1a2023; /* Solace ink */
+  --color-text-muted: #4a5557;
+  --color-border: rgba(74, 85, 87, 0.2); /* Solace ghost "line" */
+
+  /* Semantic (Solace SHAP-aligned) */
+  --color-success: #557d6e;
+  --color-success-container: #d8e7df;
+  --color-warning: #b05436;
+  --color-warning-container: #f8e0cf;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-info: #406372;
+
+  /* Type */
+  --font-heading: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: var(--font-dm-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Radius (Solace) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+
+  /* Shadows (Solace soft/card/lifted) */
+  --shadow-sm: 0 4px 16px rgba(42, 71, 78, 0.04);
+  --shadow-md: 0 8px 24px rgba(42, 71, 78, 0.06);
+  --shadow-lg: 0 16px 48px rgba(42, 71, 78, 0.08);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+.editorial {
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
+  font-feature-settings: "ss01", "cv11";
+  line-height: 1.2;
+}
+
+/* Visible focus ring everywhere — accessibility commitment (never removed). */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Demo motion: new chart items slide in and flash so writes are visible. */
+@keyframes atlas-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes atlas-flash {
+  0% { background-color: var(--color-primary-subtle); box-shadow: 0 0 0 2px var(--color-primary-subtle); }
+  100% { background-color: transparent; box-shadow: 0 0 0 0 transparent; }
+}
+.atlas-new {
+  animation: atlas-slide-in 0.3s ease-out, atlas-flash 2.4s ease-out;
+  border-radius: 6px;
+}
+.atlas-fade-in {
+  animation: atlas-slide-in 0.25s ease-out;
+}
+
+/* Formatted agent replies. */
+.atlas-prose p { margin: 0 0 0.4rem; }
+.atlas-prose p:last-child { margin-bottom: 0; }
+.atlas-prose strong { font-weight: 600; color: var(--color-primary); }
+.atlas-prose em { font-style: italic; }
+.atlas-prose h4 { font-weight: 600; font-size: 0.875rem; margin: 0.2rem 0 0.3rem; }
+.atlas-prose ul { margin: 0.2rem 0 0.4rem; padding-left: 1rem; list-style: disc; }
+.atlas-prose li { margin: 0.1rem 0; }
+.atlas-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

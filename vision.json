@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "createdAt": "2026-06-04T15:47:05Z",
+    "updatedAt": "2026-06-04T15:47:05Z",
+    "version": "1.0",
+    "plaidVersion": "1.0"
+  },
+  "creator": {
+    "name": "Sriyan",
+    "expertise": "Clinical-AI and health-tech engineering. Built Solace, a HIPAA-aware clinical AI platform with an EHR Copilot, PHI-isolation guarantees, ML triage (LightGBM ensemble + SHAP), and a Plan-Execute-Narrate agent loop. Also ships full-stack Next.js products.",
+    "background": "Built at a hackathon (theme: 'build a tool for something') by a team with real clinical-AI chops. The team previously built an EHR Copilot inside Solace that already solves the hard parts: PHI isolation enforced by a leak test as a CI gate, a working agent loop, and clinical reasoning over a chart. Atlas is a focused, demoable slice of that capability aimed at the single most hated EHR chore: order entry."
+  },
+  "purpose": {
+    "whoYouHelp": "Practicing physicians (starting with primary care and hospitalists) who use a modern FHIR-capable EHR, place multiple orders per patient encounter, and are fluent in clinical shorthand but exhausted by the click-heavy menu-diving order entry demands of their EHR.",
+    "problemYouSolve": "Clinicians spend more time fighting their EHR than talking to patients. Placing orders (labs, imaging, meds) means diving through nested menus, one click at a time, dozens of times a day. It is slow, repetitive, and a leading driver of physician burnout. There is no fast, in-context layer that turns 'just tell it what you want' into correctly structured, coded orders.",
+    "desiredTransformation": "A doctor goes from clicking through nested order menus for several minutes per patient to speaking or typing one plain-English sentence and confirming a correctly drafted order set in seconds. The EHR stops being an adversary and becomes something that keeps up with the clinician's thinking, giving time and attention back to the patient.",
+    "whyYou": "The team has already built a production-grade EHR Copilot with verified PHI isolation and a working agent loop, so the credibility-defining parts (HIPAA safety, reasoning over a chart, structured execution) are backed by real prior work, not slideware."
+  },
+  "product": {
+    "name": "Atlas",
+    "oneLiner": "Atlas turns a clinician's plain-English intent into structured, coded orders inside any FHIR EHR.",
+    "howItWorks": "Atlas is a browser sidecar that sits alongside the EHR and is aware of the open patient's context, read live from FHIR. The clinician types or speaks an order in natural language ('order a CBC and a chest X-ray, and start metformin 500mg BID'). Atlas interprets the request against the patient's chart, drafts the corresponding structured FHIR orders, narrates in plain English what it is about to do, and asks for a single confirmation. On confirm, the orders write back to the EHR and appear in the patient's chart.",
+    "keyCapabilities": [
+      "Natural-language order entry that maps spoken/typed intent to structured FHIR orders (ServiceRequest, MedicationRequest) with the right codes",
+      "Live patient context awareness, reading demographics, problems, meds, and allergies from FHIR so suggestions fit the chart",
+      "Plain-English narration of every drafted action before it happens, with one-click confirm/reject",
+      "Write-back of confirmed orders to the FHIR EHR so they appear in the chart immediately",
+      "PHI-safe agent design: the AI plans and narrates over coded metadata and never handles raw PHI"
+    ],
+    "platform": "web",
+    "marketDifferentiation": "Unlike incumbent EHR order entry (endless nested menus) and unlike ambient-scribe tools that only draft notes, Atlas acts on the chart: it turns intent into confirmable, coded orders and writes them back. It runs on standard FHIR so it works with any compliant EHR, and its PHI-safe agent loop is real and demonstrable rather than a compliance claim on a slide.",
+    "magicMoment": "The clinician picks a patient, types 'order a CBC and a chest X-ray, and start metformin 500mg BID', and Atlas instantly reads the chart and drafts three correctly structured and coded orders with a plain-English summary. The doctor clicks Confirm once and the orders write back to the EHR and appear in the patient's chart, seconds after a single sentence, with no real PHI ever touched."
+  },
+  "audience": {
+    "primaryUser": "Dr. Patel, 38, a hospitalist managing a full panel of inpatients. She places dozens of orders a day and knows exactly what she wants clinically, but loses minutes per patient to menu-diving in the EHR. She would adopt anything that lets her express an order the way she'd say it out loud and trust it to land correctly.",
+    "secondaryUsers": [
+      "Primary care physicians in busy outpatient clinics who batch orders during short visits",
+      "Nurse practitioners and physician assistants with ordering privileges who face the same EHR friction",
+      "Health-system CMIOs and informatics leaders who evaluate clinician-facing tools and care about FHIR interoperability and burnout reduction"
+    ],
+    "currentAlternatives": "Native EHR order entry (Epic, Cerner) with nested menus and order sets; dictation/transcription to a human scribe who then enters orders; ambient AI scribes (Abridge, Nuance DAX) that draft notes but do not place orders; or simply absorbing the clicking as part of the job.",
+    "frustrations": "Native order entry is slow and click-heavy, optimized for billing completeness rather than clinician speed. Scribes are expensive and don't scale. Ambient scribes solve documentation but stop short of acting on the chart, so the order-entry burden remains. Across all of them, the gap is the same: nothing turns a clinician's stated intent directly into confirmable, coded orders."
+  },
+  "business": {
+    "revenueModel": "free",
+    "initialGoal": "Win or place at the hackathon with a flawless live demo: a real end-to-end loop against the HAPI FHIR sandbox where natural-language input becomes confirmed, coded orders written back to a synthetic patient's chart. Capture interest from at least one clinician or judge for a follow-up pilot conversation.",
+    "sixMonthVision": "Atlas runs as a real SMART-on-FHIR app launchable inside at least one sandboxed EHR environment, expands beyond orders into a second copilot action (e.g. the 30-second patient brief), and is being piloted by a small group of friendly clinicians with a documented time-saved-per-encounter metric.",
+    "constraints": "Hackathon time box (hours, not weeks) and a small team. No real EHR vendor access, so the build targets the FHIR standard and a public sandbox. Strict no-real-PHI rule. Monetization deliberately deferred. Strength: deep prior clinical-AI work (Solace) to reuse patterns from.",
+    "goToMarket": "Hackathon demo and judge/clinician word-of-mouth first. Post-hackathon, lead with the interoperability story ('works with any FHIR EHR') and the burnout-reduction angle, targeting informatics communities (CMIOs, clinical informatics) and building credibility through the demonstrable PHI-safe agent loop. Open-source or sandbox-launchable demo to lower the trial barrier."
+  },
+  "feeling": {
+    "brandPersonality": "Calm clinical trust. The senior colleague who never panics: precise, reassuring, and quietly competent. Confident without being flashy, because it is asking clinicians to trust it near patient care.",
+    "visualMood": "Reuse the Solace design language: a teal-led palette with the Solace foundation tokens, clean and Cruise-inspired with generous whitespace and restraint. Serif (Fraunces) reserved for marketing surfaces only; the app UI stays in the clean sans system. The sidecar should feel like a native, trustworthy extension of the EHR, not a flashy add-on. Exact color and spacing tokens should be pulled from the Solace foundation token set.",
+    "toneOfVoice": "Clear, precise, and reassuring. Plain clinical language, never hype. Always states what it is about to do before doing it. Example confirm prompt: 'Ready to place 3 orders for John Doe: CBC, chest X-ray (PA/lateral), and metformin 500mg BID. Confirm?' Example safe-stop: 'I can't confirm a dose for this medication from what you said. Want to specify it, or skip this order?'",
+    "antiPatterns": "Never feel like a gimmicky chatbot bolted onto medicine, never auto-execute an order without explicit confirmation, never expose or transmit raw PHI to the model, never use playful or jokey copy near clinical actions, and never bury what it's about to do behind vague phrasing."
+  },
+  "techStack": {
+    "appType": "web",
+    "frontend": {
+      "choice": "Next.js",
+      "rationale": "Best AI-coding-tool support, huge ecosystem, server-side API routes for safely proxying Anthropic and FHIR calls, and the team has shipped Next.js apps before. Fastest path to a polished hackathon demo, deploys to Vercel instantly."
+    },
+    "backend": {
+      "choice": "Next.js API routes",
+      "rationale": "Server-side route handlers proxy the Anthropic API and the HAPI FHIR sandbox so API keys never reach the browser. Fewest moving parts for a hackathon; no separate backend service to stand up."
+    },
+    "database": {
+      "choice": "None",
+      "rationale": "No persistent database for the hackathon build. State is held in the session and a lightweight in-memory audit log of drafted/confirmed orders. A real immutable audit store (e.g. Convex or Postgres) is a documented production next step."
+    },
+    "auth": {
+      "choice": "None",
+      "rationale": "No real user accounts for the demo. A mocked SMART-on-FHIR login plus a patient picker stands in for the EHR launch context. Real SMART-on-FHIR OAuth is the stated production next step."
+    },
+    "payments": {
+      "choice": "",
+      "rationale": "No payments for the hackathon build — monetization is deliberately deferred (revenue model is 'free, figure it out later')."
+    }
+  },
+  "tooling": {
+    "codingAgent": "claude-code"
+  }
+}
